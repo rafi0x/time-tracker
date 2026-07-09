@@ -1,0 +1,24 @@
+{
+  "name": "time-tracker",
+  "description": "A simple time tracker app",
+  "version": "1.0.3",
+  "private": true,
+  "author": "Rafiul Awal <rafiulawal.r@gmail.com>",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "dbus-next": "^0.10.2",
+    "next": "^15.5.20",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}

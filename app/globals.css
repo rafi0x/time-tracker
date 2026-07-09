@@ -1,0 +1,422 @@
+:root {
+  --bg: #14171d;
+  --surface: #1b1f27;
+  --surface-2: #222733;
+  --line: #2c3342;
+  --text: #e8eaf0;
+  --text-dim: #8b93a7;
+  --lume: #f5b942;
+  --lume-deep: #c98f1e;
+  --lume-ink: #241a05;
+  --danger: #e06c5f;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--lume);
+  outline-offset: 2px;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- App shell ---------- */
+
+.shell {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+}
+
+/* ---------- Day navigation ---------- */
+
+.daynav {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.daynav h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.daynav .spacer {
+  flex: 1;
+}
+
+.daynav .day-total {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.daynav .day-total strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.nav-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  align-self: center;
+}
+
+.nav-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.today-btn {
+  align-self: center;
+  font-size: 12px;
+  color: var(--lume);
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.today-btn:hover {
+  border-color: var(--lume-deep);
+}
+
+/* ---------- Running strip (signature) ---------- */
+
+.running-strip {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 92px;
+}
+
+.running-strip.active {
+  border-color: var(--lume-deep);
+  box-shadow: 0 0 0 1px rgba(245, 185, 66, 0.15), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.running-strip .info {
+  flex: 1;
+  min-width: 0;
+}
+
+.running-strip .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.running-strip.active .label {
+  color: var(--lume);
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lume);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot { animation: none; }
+}
+
+.running-strip .task-name {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.running-strip .idle-hint {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-top: 3px;
+}
+
+.big-time {
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.running-strip.active .big-time {
+  color: var(--lume);
+}
+
+.strip-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- Buttons ---------- */
+
+.ctl-btn {
+  height: 40px;
+  min-width: 40px;
+  padding: 0 14px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ctl-btn:hover {
+  border-color: var(--text-dim);
+}
+
+.ctl-btn.primary {
+  background: var(--lume);
+  border-color: var(--lume);
+  color: var(--lume-ink);
+}
+
+.ctl-btn.primary:hover {
+  background: var(--lume-deep);
+  border-color: var(--lume-deep);
+}
+
+/* ---------- Add task ---------- */
+
+.add-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.add-form input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 14px;
+}
+
+.add-form input::placeholder {
+  color: var(--text-dim);
+}
+
+.add-form input:focus-visible {
+  outline-offset: 0;
+}
+
+/* ---------- Task list ---------- */
+
+.task-list {
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.task-row + .task-row {
+  border-top: 1px solid var(--line);
+}
+
+.task-row.running {
+  background: rgba(245, 185, 66, 0.06);
+}
+
+.task-row .name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-row .time {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.task-row.running .time {
+  color: var(--lume);
+}
+
+.row-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.row-btn:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.row-btn.play:hover {
+  color: var(--lume);
+  border-color: var(--lume-deep);
+}
+
+.row-btn.delete:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.edit-form {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  align-items: center;
+}
+
+.edit-form input {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+.edit-form .edit-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-form .edit-time {
+  width: 110px;
+  text-align: center;
+}
+
+.edit-form .ctl-btn {
+  height: 34px;
+}
+
+.empty {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* ---------- Tray panel ---------- */
+
+.panel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100vh;
+  justify-content: center;
+}
+
+.panel .task-name {
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel .big-time {
+  text-align: center;
+  font-size: 34px;
+}
+
+.panel .big-time.active {
+  color: var(--lume);
+}
+
+.panel .controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.panel .open-link {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.panel .open-link:hover {
+  color: var(--text);
+}
+
+@media (max-width: 480px) {
+  .shell { padding: 20px 14px 40px; }
+  .big-time { font-size: 30px; }
+  .running-strip { flex-wrap: wrap; }
+}

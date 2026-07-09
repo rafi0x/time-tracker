@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # deno desktop is experimental; pin the version that the app was
+      # developed and tested against.
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: "2.9.2"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js
+        run: npx next build
+
+      # All targets cross-compile from Linux; platform backends are
+      # downloaded automatically by deno desktop.
+      - name: Build Windows installer
+        run: deno task compile:win
+
+      - name: Build macOS app (Apple Silicon)
+        run: deno task compile:mac
+
+      - name: Build Linux .deb
+        run: deno task compile:deb
+
+      - name: Zip macOS bundles
+        run: |
+          cd dist
+          zip -qry TimeTracker-macos-arm64.app.zip TimeTracker.app
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/TimeTracker.msi
+            dist/TimeTracker.deb
+            dist/TimeTracker-macos-arm64.app.zip
+

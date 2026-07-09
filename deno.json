@@ -1,0 +1,30 @@
+{
+  "nodeModulesDir": "manual",
+  "desktop": {
+    "app": {
+      "name": "Time Tracker",
+      "identifier": "com.rafi0x.timetracker",
+      "icons": {
+        "macos": [
+          {
+            "path": "./icons/repeat.png",
+            "size": 512
+          }
+        ],
+        "windows": "./icons/app.ico",
+        "linux": "./icons/repeat.png"
+      }
+    },
+    "backend": "webview"
+  },
+  "tasks": {
+    "dev": "deno desktop -A --hmr .",
+    "build": "node node_modules/next/dist/bin/next build",
+    "app": "deno desktop -A --exclude dist --exclude 'Time Tracker' .",
+    "compile:linux": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target x86_64-unknown-linux-gnu -o dist/TimeTracker.AppImage .",
+    "compile:deb": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target x86_64-unknown-linux-gnu -o dist/TimeTracker.deb . && node scripts/deb-version.mjs dist/TimeTracker.deb $(node -p \"require('./package.json').version\")",
+    "compile:win": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target x86_64-pc-windows-msvc -o dist/TimeTracker.msi .",
+    "compile:mac": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target aarch64-apple-darwin -o dist/TimeTracker.app .",
+    "compile:mac-intel": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target x86_64-apple-darwin -o dist/TimeTracker-intel.app ."
+  }
+}
