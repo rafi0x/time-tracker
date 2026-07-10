@@ -1,7 +1,7 @@
 {
   "name": "time-tracker",
   "description": "A simple time tracker app",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "author": "Rafiul Awal <rafiulawal.r@gmail.com>",
   "scripts": {
