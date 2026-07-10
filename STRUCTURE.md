@@ -10,16 +10,24 @@ time-tracker/
 ├── app/                       # Next.js App Router (UI + API)
 │   ├── layout.tsx             # fonts (Sora + Spline Sans Mono), global shell
 │   ├── globals.css            # design tokens & all styling
-│   ├── page.tsx               # dashboard: day nav, add task, task rows, edit mode
+│   ├── page.tsx               # dashboard: day nav, add task, task rows, edit mode, Copy CSV
+│   ├── OptionPicker.tsx       # typeahead select whose list you can add to / remove from
 │   ├── panel/page.tsx         # compact popover UI shown from the tray (mac/win)
 │   └── api/
 │       ├── tasks/route.ts     # GET ?day= list · POST create (start:true auto-starts)
-│       ├── tasks/[id]/route.ts# PATCH name/totalMs · DELETE
+│       ├── tasks/[id]/route.ts# PATCH name/project/category/totalMs · DELETE
+│       ├── options/route.ts   # GET all · POST add · DELETE ?kind=&value=
+│       ├── export/route.ts    # GET ?day= → the day's activity as CSV
 │       └── timer/route.ts     # GET state · POST start/pause/resume/stop
 │
 ├── lib/
 │   ├── db.ts                  # node:sqlite; schema, queries, timer logic, time adjustment
+│   ├── csv.ts                 # RFC 4180 CSV of a day's tasks; ms → hh:mm
 │   └── time.ts                # format/parse durations, day arithmetic
+│
+├── extension/                 # Chrome MV3 extension — see extension/README.md
+│   ├── popup.js               # name setup, CSV paste/parse/preview
+│   └── background.js          # service worker: drives the Fillout timesheet form
 │
 ├── desktop/                   # native-shell integration (runs inside deno desktop only)
 │   ├── tray.ts                # entry: window lifecycle (hide-to-tray) + platform routing
@@ -44,8 +52,10 @@ time-tracker/
 ## Data model (SQLite)
 
 ```sql
-tasks(id, name, day 'YYYY-MM-DD', created_at)
+tasks(id, name, day 'YYYY-MM-DD', project, category, created_at)
 time_entries(id, task_id → tasks ON DELETE CASCADE, started_at, stopped_at NULL)
+options(id, kind 'project'|'category', value, created_at, UNIQUE(kind, value))
+meta(key, value)
 ```
 
 - Running timer = the single entry with `stopped_at IS NULL`
@@ -53,6 +63,16 @@ time_entries(id, task_id → tasks ON DELETE CASCADE, started_at, stopped_at NUL
 - Pause closes the entry; resume opens a new one
 - Manual time edits insert a correction entry whose duration is the signed
   delta (`stopped_at` may be before `started_at`) — history is never rewritten
+- A task's project/category are plain text copies, not foreign keys, so
+  removing an option never touches tasks that already used it
+- `options` is seeded with the timesheet form's projects/categories once,
+  guarded by `meta['options_seeded']` so deleted ones stay deleted
+
+## Timesheet handoff
+
+`Copy CSV` → `GET /api/export?day=` → clipboard → the `extension/` popup →
+autofilled Fillout form. CSV is the only contract between the two; the
+extension never talks to the tracker's server.
 
 ## Runtime shape
 

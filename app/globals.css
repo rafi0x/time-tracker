@@ -241,16 +241,47 @@ input {
   border-color: var(--lume-deep);
 }
 
+.copy-btn {
+  align-self: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.copy-btn:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.copy-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 /* ---------- Add task ---------- */
 
 .add-form {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 18px;
+  position: relative;
+  z-index: 10;
+}
+
+.add-meta {
+  display: flex;
+  gap: 10px;
+}
+
+.add-meta .picker {
+  flex: 1;
 }
 
 .add-form input {
-  flex: 1;
+  width: 100%;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 9px;
@@ -265,6 +296,129 @@ input {
   outline-offset: 0;
 }
 
+/* ---------- Option picker (project / category) ---------- */
+
+.picker {
+  position: relative;
+  min-width: 0;
+}
+
+.picker input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 30px 10px 14px;
+}
+
+.picker input::placeholder {
+  color: var(--text-dim);
+}
+
+.picker-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  color: var(--text-dim);
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.picker-clear:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.picker-list {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  padding: 4px;
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+}
+
+.picker-row.hi {
+  background: var(--surface);
+}
+
+.picker-pick {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.picker-row.new .picker-pick {
+  color: var(--lume);
+}
+
+.picker-remove {
+  width: 26px;
+  height: 26px;
+  margin-right: 4px;
+  border-radius: 5px;
+  color: var(--text-dim);
+  font-size: 11px;
+  flex: none;
+}
+
+.picker-remove:hover {
+  color: var(--danger);
+  background: var(--bg);
+}
+
+.picker-empty {
+  padding: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ---------- Project / category badges ---------- */
+
+.badge {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.badge.project {
+  border-color: var(--lume-deep);
+  color: var(--lume);
+}
+
+.badges {
+  display: inline-flex;
+  gap: 6px;
+  overflow: hidden;
+}
+
 /* ---------- Task list ---------- */
 
 .task-list {
@@ -272,7 +426,8 @@ input {
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--surface);
-  overflow: hidden;
+  /* Not `overflow: hidden` — that would clip a picker dropdown opened while
+     editing a row. The end rows round their own corners instead. */
 }
 
 .task-row {
@@ -280,6 +435,16 @@ input {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
+}
+
+.task-list > :first-child {
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
+}
+
+.task-list > :last-child {
+  border-bottom-left-radius: 11px;
+  border-bottom-right-radius: 11px;
 }
 
 .task-row + .task-row {
@@ -290,9 +455,17 @@ input {
   background: rgba(245, 185, 66, 0.06);
 }
 
-.task-row .name {
+.task-row .cell {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.task-row .name {
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -335,10 +508,14 @@ input {
 }
 
 .edit-form {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 110px;
   gap: 8px;
   flex: 1;
   align-items: center;
+  /* Positioned so its picker dropdowns paint over the rows below. */
+  position: relative;
+  z-index: 5;
 }
 
 .edit-form input {
@@ -346,16 +523,31 @@ input {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 7px 10px;
+  width: 100%;
 }
 
 .edit-form .edit-name {
-  flex: 1;
   min-width: 0;
 }
 
 .edit-form .edit-time {
-  width: 110px;
   text-align: center;
+}
+
+.edit-meta {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.edit-meta .picker {
+  flex: 1;
+}
+
+.edit-meta .picker input {
+  padding: 7px 26px 7px 10px;
+  background: var(--bg);
 }
 
 .edit-form .ctl-btn {

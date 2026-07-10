@@ -7,10 +7,38 @@ export interface Task {
   id: number;
   name: string;
   day: string;
+  project: string;
+  category: string;
   created_at: number;
   total_ms: number;
   running: boolean;
 }
+
+export type OptionKind = "project" | "category";
+
+/** Shipped defaults for the Techzu timesheet form. Seeded once; removable. */
+const SEED_OPTIONS: Record<OptionKind, string[]> = {
+  project: [
+    "Bookland ERP",
+    "Builder Alliance",
+    "Dr Cool",
+    "Hydroflux",
+    "NewERP",
+    "Prowork",
+    "Rina CRM",
+    "SME Taskhub",
+    "VSB",
+    "Worksite Mini ERP",
+    "ZuPOS",
+  ],
+  category: [
+    "Meeting (General)",
+    "Meeting (Technical)",
+    "Development",
+    "Code Review",
+    "Miscellaneous",
+  ],
+};
 
 export interface TimerState {
   running: boolean;
@@ -34,6 +62,31 @@ function dataDir(): string {
 
 let db: DatabaseSync | null = null;
 
+function addColumnIfMissing(d: DatabaseSync, table: string, column: string, decl: string): void {
+  const cols = d.prepare(`PRAGMA table_info(${table})`).all() as unknown as { name: string }[];
+  if (!cols.some((c) => c.name === column)) {
+    d.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${decl}`);
+  }
+}
+
+/**
+ * Insert the shipped project/category lists exactly once. Guarded by a meta
+ * flag rather than INSERT OR IGNORE so that options the user deleted don't
+ * come back on the next launch.
+ */
+function seedOptions(d: DatabaseSync): void {
+  const done = d.prepare("SELECT value FROM meta WHERE key = 'options_seeded'").get();
+  if (done) return;
+  const insert = d.prepare(
+    "INSERT OR IGNORE INTO options (kind, value, created_at) VALUES (?, ?, ?)",
+  );
+  const now = Date.now();
+  for (const kind of Object.keys(SEED_OPTIONS) as OptionKind[]) {
+    for (const value of SEED_OPTIONS[kind]) insert.run(kind, value, now);
+  }
+  d.prepare("INSERT INTO meta (key, value) VALUES ('options_seeded', '1')").run();
+}
+
 export function getDb(): DatabaseSync {
   if (db) return db;
   const dir = dataDir();
@@ -54,10 +107,48 @@ export function getDb(): DatabaseSync {
       started_at INTEGER NOT NULL,
       stopped_at INTEGER
     );
+    CREATE TABLE IF NOT EXISTS options (
+      id INTEGER PRIMARY KEY,
+      kind TEXT NOT NULL,
+      value TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      UNIQUE (kind, value)
+    );
+    CREATE TABLE IF NOT EXISTS meta (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS idx_tasks_day ON tasks(day);
     CREATE INDEX IF NOT EXISTS idx_entries_task ON time_entries(task_id);
   `);
+  // Tasks predating project/category tracking keep them empty.
+  addColumnIfMissing(db, "tasks", "project", "TEXT NOT NULL DEFAULT ''");
+  addColumnIfMissing(db, "tasks", "category", "TEXT NOT NULL DEFAULT ''");
+  seedOptions(db);
   return db;
+}
+
+// ---------- project / category options ----------
+
+export function listOptions(kind: OptionKind): string[] {
+  const rows = getDb()
+    .prepare("SELECT value FROM options WHERE kind = ? ORDER BY value COLLATE NOCASE ASC")
+    .all(kind) as unknown as { value: string }[];
+  return rows.map((r) => r.value);
+}
+
+export function addOption(kind: OptionKind, value: string): void {
+  getDb()
+    .prepare("INSERT OR IGNORE INTO options (kind, value, created_at) VALUES (?, ?, ?)")
+    .run(kind, value, Date.now());
+}
+
+/**
+ * Options are copied into tasks as plain text, so removing one never touches
+ * tasks that already reference it — it only leaves the picker's list.
+ */
+export function removeOption(kind: OptionKind, value: string): void {
+  getDb().prepare("DELETE FROM options WHERE kind = ? AND value = ?").run(kind, value);
 }
 
 export function todayStr(d = new Date()): string {
@@ -71,7 +162,7 @@ export function listTasks(day: string): Task[] {
   const now = Date.now();
   const rows = getDb()
     .prepare(
-      `SELECT t.id, t.name, t.day, t.created_at,
+      `SELECT t.id, t.name, t.day, t.project, t.category, t.created_at,
               COALESCE(SUM(COALESCE(e.stopped_at, ?) - e.started_at), 0) AS total_ms,
               MAX(CASE WHEN e.id IS NOT NULL AND e.stopped_at IS NULL THEN 1 ELSE 0 END) AS running
        FROM tasks t
@@ -84,22 +175,44 @@ export function listTasks(day: string): Task[] {
   return rows.map((r) => ({ ...r, total_ms: Number(r.total_ms), running: !!r.running }));
 }
 
-export function createTask(name: string, day: string): Task {
+export function createTask(name: string, day: string, project = "", category = ""): Task {
+  const created_at = Date.now();
   const res = getDb()
-    .prepare("INSERT INTO tasks (name, day, created_at) VALUES (?, ?, ?)")
-    .run(name, day, Date.now());
+    .prepare(
+      "INSERT INTO tasks (name, day, project, category, created_at) VALUES (?, ?, ?, ?, ?)",
+    )
+    .run(name, day, project, category, created_at);
+  // Picking a value that isn't in the list yet is how a new option is born.
+  if (project) addOption("project", project);
+  if (category) addOption("category", category);
   return {
     id: Number(res.lastInsertRowid),
     name,
     day,
-    created_at: Date.now(),
+    project,
+    category,
+    created_at,
     total_ms: 0,
     running: false,
   };
 }
 
-export function renameTask(id: number, name: string): void {
-  getDb().prepare("UPDATE tasks SET name = ? WHERE id = ?").run(name, id);
+export function updateTask(
+  id: number,
+  fields: { name?: string; project?: string; category?: string },
+): void {
+  const sets: string[] = [];
+  const values: string[] = [];
+  for (const key of ["name", "project", "category"] as const) {
+    const value = fields[key];
+    if (value === undefined) continue;
+    sets.push(`${key} = ?`);
+    values.push(value);
+  }
+  if (!sets.length) return;
+  getDb().prepare(`UPDATE tasks SET ${sets.join(", ")} WHERE id = ?`).run(...values, id);
+  if (fields.project) addOption("project", fields.project);
+  if (fields.category) addOption("category", fields.category);
 }
 
 /**

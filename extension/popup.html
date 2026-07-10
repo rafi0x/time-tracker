@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <!-- First run: pick who you are. Stored, never asked again. -->
+    <section id="setup" class="view hidden">
+      <h1>Who are you?</h1>
+      <p class="hint">Pick your name once — it's remembered for every fill.</p>
+      <button id="loadNames" class="btn">Load names from form</button>
+      <div id="setupPicker" class="hidden">
+        <div class="combo">
+          <input id="nameInput" placeholder="Type to search…" autocomplete="off" />
+          <ul id="nameList" class="combo-list hidden"></ul>
+        </div>
+        <button id="saveName" class="btn primary">Save</button>
+      </div>
+      <p id="setupStatus" class="status"></p>
+    </section>
+
+    <section id="main" class="view hidden">
+      <header class="topbar">
+        <span class="who">Filling as <strong id="whoName"></strong></span>
+        <button id="changeName" class="link">change</button>
+      </header>
+
+      <label class="label" for="csv">Paste the CSV copied from Time Tracker</label>
+      <textarea
+        id="csv"
+        rows="5"
+        spellcheck="false"
+        placeholder="date,project,category,task,time&#10;2026-07-10,NewERP,Development,Fix login redirect,01:30"
+      ></textarea>
+      <div class="row">
+        <button id="pasteBtn" class="btn">Paste from clipboard</button>
+        <button id="clearBtn" class="btn">Clear</button>
+      </div>
+
+      <div id="preview"></div>
+
+      <button id="fillBtn" class="btn primary block" disabled>Fill form</button>
+      <p class="fineprint">
+        Adds every selected entry, then stops. You always click the form's own
+        Submit yourself.
+      </p>
+      <p id="fillStatus" class="status"></p>
+    </section>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -17,7 +17,9 @@ export async function POST(req: NextRequest) {
   const day = typeof body.day === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.day)
     ? body.day
     : todayStr();
-  const task = createTask(name, day);
+  const project = typeof body.project === "string" ? body.project.trim() : "";
+  const category = typeof body.category === "string" ? body.category.trim() : "";
+  const task = createTask(name, day, project, category);
   if (body.start) {
     startTimer(task.id);
     task.running = true;

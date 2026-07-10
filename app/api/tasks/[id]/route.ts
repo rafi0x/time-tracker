@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adjustTaskTime, deleteTask, renameTask } from "@/lib/db";
+import { adjustTaskTime, deleteTask, updateTask } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -11,17 +11,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const body = await req.json();
 
   const name = typeof body.name === "string" ? body.name.trim() : undefined;
+  const project = typeof body.project === "string" ? body.project.trim() : undefined;
+  const category = typeof body.category === "string" ? body.category.trim() : undefined;
   const totalMs = typeof body.totalMs === "number" && Number.isFinite(body.totalMs)
     ? body.totalMs
     : undefined;
 
-  if (name === undefined && totalMs === undefined) {
+  if (name === undefined && project === undefined && category === undefined && totalMs === undefined) {
     return NextResponse.json({ error: "nothing to update" }, { status: 400 });
   }
-  if (name !== undefined) {
-    if (!name) return NextResponse.json({ error: "name cannot be empty" }, { status: 400 });
-    renameTask(taskId, name);
+  if (name !== undefined && !name) {
+    return NextResponse.json({ error: "name cannot be empty" }, { status: 400 });
   }
+  updateTask(taskId, { name, project, category });
   if (totalMs !== undefined) {
     if (totalMs < 0) {
       return NextResponse.json({ error: "totalMs must be >= 0" }, { status: 400 });
