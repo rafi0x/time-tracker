@@ -11,7 +11,6 @@
             "size": 512
           }
         ],
-        "windows": "./icons/app.ico",
         "linux": "./icons/repeat.png"
       }
     },
@@ -20,11 +19,12 @@
   "tasks": {
     "dev": "deno desktop -A --hmr .",
     "build": "node node_modules/next/dist/bin/next build",
-    "app": "deno desktop -A --exclude dist --exclude 'Time Tracker' .",
-    "compile:linux": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target x86_64-unknown-linux-gnu -o dist/TimeTracker.AppImage .",
-    "compile:deb": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target x86_64-unknown-linux-gnu -o dist/TimeTracker.deb . && node scripts/deb-version.mjs dist/TimeTracker.deb $(node -p \"require('./package.json').version\")",
-    "compile:win": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target x86_64-pc-windows-msvc -o dist/TimeTracker.msi .",
-    "compile:mac": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target aarch64-apple-darwin -o dist/TimeTracker.app .",
-    "compile:mac-intel": "deno desktop -A --exclude dist --exclude 'Time Tracker' --target x86_64-apple-darwin -o dist/TimeTracker-intel.app ."
+    "clean": "rm -rf dist 'Time Tracker'",
+    "app": "deno desktop -A --exclude dist -o dist/TimeTracker .",
+    "compile:linux": "deno desktop -A --exclude dist --target x86_64-unknown-linux-gnu -o dist/TimeTracker.AppImage .",
+    "compile:deb": "deno desktop -A --exclude dist --target x86_64-unknown-linux-gnu -o dist/TimeTracker.deb . && node scripts/deb-version.mjs dist/TimeTracker.deb $(node -p \"require('./package.json').version\")",
+    "compile:win": "deno desktop -A --exclude dist --exclude .next/cache --exclude node_modules/typescript --exclude node_modules/@types --exclude node_modules/@img --exclude node_modules/sharp --exclude node_modules/@next/swc-win32-x64-msvc --exclude node_modules/@next/swc-linux-x64-gnu --exclude node_modules/@next/swc-linux-x64-musl --icon ./icons/app.ico --target x86_64-pc-windows-msvc -o dist/win/TimeTracker .",
+    "compile:mac": "deno desktop -A --exclude dist --target aarch64-apple-darwin -o dist/TimeTracker.app .",
+    "compile:mac-intel": "deno desktop -A --exclude dist --target x86_64-apple-darwin -o dist/TimeTracker-intel.app ."
   }
 }

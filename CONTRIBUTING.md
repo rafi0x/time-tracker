@@ -57,8 +57,9 @@ the Windows icon: `node scripts/png2ico.mjs`.
 ## Releases
 
 Push a tag like `v0.2.0` — the [release workflow](.github/workflows/release.yml)
-cross-compiles the Windows `.msi`, macOS `.app` zips (arm64 + x64), and Linux
-`.deb`, and attaches them to a GitHub release.
+builds the Linux `.deb` on Ubuntu, the Windows `TimeTracker-Setup.exe` on a
+Windows runner (Inno Setup and rcedit are Windows-only), and the macOS `.app`
+zip on macOS, then attaches them to a GitHub release.
 
 ## Commit style
 

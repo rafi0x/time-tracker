@@ -30,7 +30,9 @@ dependencies).
 ## Install
 
 Grab the latest [release](../../releases): `TimeTracker.deb` (Linux),
-`TimeTracker.msi` (Windows), or the macOS `.app` zip for your architecture.
+`TimeTracker-Setup.exe` (Windows), or the macOS `.app` zip for your
+architecture. The Windows installer pulls in the Edge WebView2 runtime if the
+machine does not already have it.
 
 ```sh
 # Linux
@@ -54,12 +56,13 @@ npm run dev          # or plain Next.js dev in the browser (no tray)
 ## Build & package
 
 ```sh
-deno task app              # build + bundle + run for this machine
+deno task app              # build + bundle for this machine → dist/TimeTracker
 deno task compile:deb      # dist/TimeTracker.deb
 deno task compile:linux    # dist/TimeTracker.AppImage
-deno task compile:win      # dist/TimeTracker.msi
+deno task compile:win      # dist/win/TimeTracker (packaged by scripts/win/installer.iss)
 deno task compile:mac      # dist/TimeTracker.app (Apple Silicon)
 deno task compile:mac-intel
+deno task clean            # rm -rf dist
 ```
 
 All targets cross-compile from any machine. Pushing a `v*` tag runs the

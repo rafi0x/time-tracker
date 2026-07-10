@@ -33,11 +33,12 @@ time-tracker/
 │   └── app.ico                # generated for Windows — node scripts/png2ico.mjs
 ├── scripts/
 │   ├── png2ico.mjs            # regenerates icons/app.ico from icons/repeat.png
-│   └── deb-version.mjs        # stamps package.json's version into the .deb
-│                              #   (deno desktop hardcodes 1.0.0)
+│   ├── deb-version.mjs        # stamps package.json's version into the .deb
+│   │                          #   (deno desktop hardcodes 1.0.0)
+│   └── win/installer.iss      # Inno Setup script — replaces deno's unusable .msi
 │
 └── .github/workflows/
-    └── release.yml            # tag v* → build .msi / .deb / mac .app zips → GitHub release
+    └── release.yml            # tag v* → build Setup.exe / .deb / mac .app zips → GitHub release
 ```
 
 ## Data model (SQLite)
